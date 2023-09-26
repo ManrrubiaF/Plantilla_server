@@ -6,7 +6,10 @@ class Booking extends Model{
     public id!:number;
     public userId!:Number;
     public productId!: Number;
-    public stock!:JSON;
+    public stock!:{
+        color:string;
+        stocked: number;
+    }[]
 
 }
 
@@ -36,7 +39,7 @@ Booking.init(
             
         },
         stock: {
-            type: DataTypes.JSONB,
+            type: DataTypes.JSON,
             allowNull: false
         },
     },{

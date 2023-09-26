@@ -7,7 +7,9 @@ class Product extends Model {
     public name!: string;
     public description!: string;
     public photo!: JSON;
-    public stock!: JSON;
+    public stock!: {
+        [color: string]: number;
+      };
     public active!: Boolean;
     public type!: string;
 
