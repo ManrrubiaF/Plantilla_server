@@ -24,11 +24,12 @@ const createProduct = async (req: Request, res: Response) => {
 
 const updateProduct = async (req:Request, res: Response) => {
     const data = req.body;
+    const { id } = req.params;
     
     try {
         const productExist = await Product.findOne({
             where:{
-                name: data.id
+                id: id
             }
         })
         if(productExist){
@@ -58,9 +59,19 @@ const deleteProduct = async (req:Request, res: Response) => {
     }
 }
 
+const getAllProducts =async (req:Request, res:Response) => {
+    try {
+        const products = await Product.findAll()
+        res.status(200).json(products);
+    } catch (error) {
+        res.status(500).json(error);
+    }    
+}
+
 export default {
     createProduct,
     updateProduct,
-    deleteProduct
+    deleteProduct,
+    getAllProducts,
 
 } 

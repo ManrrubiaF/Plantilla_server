@@ -1,26 +1,23 @@
-import { Sequelize } from 'sequelize';
-import fs from 'fs';
-import path from 'path';
-import User from './models/Users';
-import Product from './models/Products';
-import Booking from './models/Booking';
-import Data from './models/Data';
+import {Sequelize} from 'sequelize-typescript';
+import { User } from './models/User';
+import { Product } from './models/Product';
+import { Booking } from './models/Booking';
+import { Data }from './models/Data';
+import config from './lib/config'
 
-require('dotenv').config();
 
-const {
-  DB_USER,
-  DB_PASSWORD,
-  DB_HOST,
-  DB_NAME
-} = process.env;
-
-const sequelize = new Sequelize(`postgres://${DB_USER}:${DB_PASSWORD}@${DB_HOST}/${DB_NAME}`, {
+const sequelize = new Sequelize({
+  dialect:'postgres',
+  database:config.DB_NAME,
+  password:config.DB_PASSWORD,
+  username: config.DB_USER,
+  storage:':memory:',
+  models:[__dirname + '/models'],
   logging: false,
-  native: false,
 });
 
-const basename = path.basename(__filename);
+
+/*const basename = path.basename(__filename);
 
 const modelDefiners: ((sequelize: typeof Sequelize) => void)[] = [];
 
@@ -33,8 +30,12 @@ fs.readdirSync(path.join(__dirname, '/models'))
     }
   });
 
-Booking.belongsTo(User, {foreignKey: 'userId'})
-Booking.belongsTo(Product, {foreignKey: 'productId'})
+let entries = Object.entries(sequelize.models);
+let capsEntries = entries.map((entry) => [entry[0][0].toUpperCase() + entry[0].slice(1), entry[1]]);
+sequelize.afterInit = Object.fromEntries(capsEntries);*/
+
+Booking.belongsTo(User, { foreignKey: 'userId' })
+Booking.belongsTo(Product, { foreignKey: 'productId' })
 User.hasMany(Booking, { foreignKey: 'userId' });
 
 

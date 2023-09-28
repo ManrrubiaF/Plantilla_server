@@ -1,56 +1,23 @@
-import { DataTypes, Model } from "sequelize";
-import { sequelize } from "../db";
+import { DataType, Table, Column, Model, CreatedAt, UpdatedAt, DeletedAt } from 'sequelize-typescript';
 
-
-class Booking extends Model{
-    public id!:number;
-    public userId!:Number;
-    public productId!: Number;
-    public stock!:{
-        color:string;
-        stocked: number;
-    }[]
+@Table({paranoid:true})
+export class Booking extends Model {
+    @Column({primaryKey: true})
+    id!: number;
+    @Column
+    userId!: Number;
+    @Column
+    productId!: Number;
+    @Column(DataType.JSON)
+    stock!: {
+        [color: string]: number;
+    };
+    @CreatedAt
+    createdAt!: Date;
+    @UpdatedAt
+    updatedAt!: Date;
+    @DeletedAt
+    deletedAt!: Date;
 
 }
 
-Booking.init(
-    {
-        id: {
-            type: DataTypes.NUMBER,
-            primaryKey: true,
-            allowNull: false,
-            autoIncrement: true
-        },
-        userId: {
-            type: DataTypes.NUMBER,
-            allowNull: false,
-            references: {
-               model: 'User',
-               key: 'id'
-            }
-        },
-        productId: {
-            type: DataTypes.NUMBER,
-            allowNull: false,
-            references: {
-                model: 'Product',
-                key: 'id'
-            }
-            
-        },
-        stock: {
-            type: DataTypes.JSON,
-            allowNull: false
-        },
-    },{
-        sequelize,
-        modelName: 'Booking',
-        paranoid:true,
-        timestamps: true,
-        createdAt: 'createdAt',
-        updatedAt: 'updatedAt',
-        deletedAt: 'destroyTime',
-    }
-);
-
-export default Booking;

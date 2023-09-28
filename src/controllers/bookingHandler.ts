@@ -1,13 +1,13 @@
 import { Booking, User, Product } from "../db";
 import { Request, Response } from "express";
 import nodemailer from 'nodemailer';
-require('dotenv');
+import config from "../lib/config";
 
-const jwt_secret: string = process.env.JWT_SECRET || '';
-const companyEmail: string = process.env.COMPANY_EMAIL || '';
-const companyPass: string = process.env.COMPANY_PASS || '';
-const back_url: string = process.env.BACK_URL || '';
-const frontUrl: string = process.env.FRONT_URL || '';
+const companyEmail: string = config.COMPANY_EMAIL || '';
+const companyPass: string = config.COMPANY_PASS || '';
+const back_url: string = config.BACK_URL || '';
+const frontUrl: string = config.FRONT_URL || '';
+const host_email: string = config.HOST_MAIL || '';
 
 interface dataProduct {
     id: number;
@@ -22,7 +22,7 @@ interface dataProduct {
 }
 
 const transporter = nodemailer.createTransport({
-    host: "smtp.gmail.com",
+    host: `${host_email}`,
     port: 465,
     secure: true,
     auth: {
@@ -33,7 +33,7 @@ const transporter = nodemailer.createTransport({
 
 const createBooking = async (req: Request, res: Response) => {
     const dataProducts: dataProduct = req.body
-    const { id } = data
+    const { id } = res.locals.userData;
 
     try {
         let enoughStock = true;
@@ -56,7 +56,7 @@ const createBooking = async (req: Request, res: Response) => {
         }
         if(enoughStock){
             await Product.create({dataProducts})
-            const user = await User.findByPk(dataProducts.userId);
+            const user = await User.findByPk(id);
             await transporter.sendMail({
                 from: `${companyEmail}`,
                 to: `${user?.email}`,
@@ -72,8 +72,14 @@ const createBooking = async (req: Request, res: Response) => {
 
 const deleteBooking = async (req: Request, res: Response) => {
     const dataProduct: dataProduct = req.body
+    const { id } = res.locals.userData;
     try {
-        const bookingExist = await Booking.findByPk(dataProduct.id);
+        const bookingExist = await Booking.findOne({
+            where:{
+                id: dataProduct.id,
+                userId: id
+            }
+        });
         if (!bookingExist) {
             res.status(404).send('Reserva/Compra no encontrada')
         }
@@ -99,7 +105,7 @@ const deleteBooking = async (req: Request, res: Response) => {
 }
 
 const getByUser =async (req:Request, res:Response) => {
-    const { id } = data;
+    const { id } = res.locals.userData;
 
     try {
         const bookingByUser = await Booking.findAll({

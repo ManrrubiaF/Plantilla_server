@@ -3,16 +3,18 @@ import bcrypt from 'bcrypt'
 import { Request, Response } from 'express';
 import * as jwt from 'jsonwebtoken';
 import nodemailer from 'nodemailer'
-require('dotenv');
+import config from '../lib/config';
 
-const jwt_secret: string = process.env.JWT_SECRET || '';
-const companyEmail: string = process.env.COMPANY_EMAIL || '';
-const companyPass: string = process.env.COMPANY_PASS || '';
-const back_url: string = process.env.BACK_URL || '';
-const frontUrl: string = process.env.FRONT_URL || '';
+
+const jwt_secret: string = config.JWT_SECRET || '';
+const companyEmail: string = config.COMPANY_EMAIL || '';
+const companyPass: string = config.COMPANY_PASS || '';
+const back_url: string = config.BACK_URL || '';
+const frontUrl: string = config.FRONT_URL || '';
+const host_mail: string = config.HOST_MAIL || '';
 
 const transporter = nodemailer.createTransport({
-    host: "smtp.gmail.com",
+    host: host_mail,
     port: 465,
     secure: true,
     auth: {
@@ -75,7 +77,7 @@ const recoverypass = async (req: Request, res: Response) => {
             }
         })
         if (userExist) {
-            const token = jwt.sign({ email: userExist.email }, jwt_secret, { expiresIn: '1h' })
+            const token = jwt.sign({id: userExist.id, email: userExist.email }, jwt_secret, { expiresIn: '1h' })
             const recoveryUrl = `${back_url}/user/${token}`
 
             await transporter.sendMail({
@@ -108,7 +110,7 @@ const mailValidation = async (req: Request, res: Response) => {
             })
         }
         if (user) {
-            const newToken = jwt.sign({ email: user.email }, jwt_secret, { expiresIn: '24h' })
+            const newToken = jwt.sign({ id: user.id ,email: user.email }, jwt_secret, { expiresIn: '24h' })
             const recoveryPage = `${frontUrl}/recovery`
             res.cookie('token', newToken, {
                 expires: expirationDate
@@ -125,20 +127,12 @@ const mailValidation = async (req: Request, res: Response) => {
 
 const changePass = async (req: Request, res: Response) => {
     const { pass } = req.body;
-    const authorizationHeader = req.headers['authorization'];
-    const authorization: string = authorizationHeader || '';
+    const { id } = res.locals.userData
 
     try {
-        const token = authorization.split(" ")[1].replace(/"/g, '');
-        const decodedToken: any = jwt.verify(token, jwt_secret);
-        const user = await User.findOne({
-            where:
-            {
-                email: decodedToken.email
-            }
-        })
+        const user = await User.findByPk(id)
         if (user) {
-            const newPass = bcrypt.hash(pass, 5)
+            const newPass = await bcrypt.hash(pass, 5)
             await user.update({
                 pass: newPass
             })
@@ -153,20 +147,46 @@ const changePass = async (req: Request, res: Response) => {
 
 }
 
+const loginUser =async (req:Request, res:Response) => {
+    const data = req.body;
+    try {
+        const userExist: User | null = await User.findOne({
+            where:{
+                email: data.email
+            }
+        })
+        const hashed = await bcrypt.hash(data.pass, 5)
+        if(!userExist){
+            res.status(404).send('Email no registrado');
+        }
+        if(userExist && userExist.pass !== hashed){
+            res.status(400).send('Contraseña incorrecta')
+        }else{
+            const payload = {
+                id: userExist?.id,
+                email: userExist?.email,
+                name: userExist?.name,
+                lastName: userExist?.lastName,
+                phone: userExist?.phone,
+                access: userExist?.access
+
+            }
+            const token = jwt.sign(payload,jwt_secret,{expiresIn: '24h'})
+            res.cookie('token', token,{expires: expirationDate})
+            res.send('Bienvenid@')
+        }
+    } catch (error) {
+        
+    }        
+}
+
 
 
 const deleteUser = async (req: Request, res: Response) => {
-    const authorizationHeader = req.headers['authorization'];
-    const authorization: string = authorizationHeader || '';
+    const { id } = res.locals.userData;
 
     try {
-        const token = authorization.split(" ")[1].replace(/"/g, '');
-        const payload:any = jwt.verify(token, jwt_secret);
-        const userExist = await User.findOne({
-            where: {
-                id: payload.id
-            }
-        })
+        const userExist = await User.findByPk(id)
         if (userExist) {
             await User.destroy({
                 where: {
@@ -182,10 +202,24 @@ const deleteUser = async (req: Request, res: Response) => {
 
 }
 
+const updateUser = async (req:Request,res:Response) => {
+    const { id } = res.locals.userData;
+    const data = req.body
+    try {
+        const userData = await User.findByPk(id)
+        await userData?.update(data);
+        res.status(200).send('Datos actualizados')
+    } catch (error) {
+        res.status(500).json(error)
+    }
+}
+
 export default {
     createUser,
     recoverypass,
     mailValidation,
     changePass,
     deleteUser,
+    loginUser,
+    updateUser,
 }

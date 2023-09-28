@@ -1,14 +1,14 @@
-const app = require("./src/server");
-const { conn } = require('./src/db.js');
+import server from "./src/server";
+import { sequelize } from "./src/db";
 const PORT = 3001;
-const routes = require('./src/routes/index.js');
+import routes from "./src/routes";
 //const { firstload } = require('./src/utils/countries')
 
-app.use('/', routes);
+server.use('/', routes);
 
-conn.sync({ force: false }).then(() => {
+sequelize.sync({force:false}).then(() => {
   //firstload();
-  app.listen(PORT, () => {
+  server.listen(PORT, () => {
   console.log(`Server listening on port ${PORT}`);
   })
 }).catch((error:Error) => console.error(error))

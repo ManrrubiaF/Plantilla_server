@@ -42,7 +42,17 @@ const deleteData = async (req:Request,res:Response) => {
     }
 }
 
+const getAllData =async (req:Request, res:Response) => {
+    try {
+        const data = await Data.findAll()
+        res.status(200).json(data);
+    } catch (error) {
+        res.status(500).json(error)
+    }    
+}
+
 export default {
+    getAllData,
     createData,
     updateData,
     deleteData,
