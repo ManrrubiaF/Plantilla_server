@@ -3,6 +3,7 @@ import { User } from './models/User';
 import { Product } from './models/Product';
 import { Booking } from './models/Booking';
 import { Data }from './models/Data';
+import { ProductDetail } from './models/ProductDetail';
 import config from './lib/config'
 
 
@@ -45,5 +46,6 @@ export {
   User,
   Product,
   Booking,
-  Data
+  Data,
+  ProductDetail
 };

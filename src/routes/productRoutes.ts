@@ -8,5 +8,5 @@ productRouter.post('/create', accessMiddleware.adminValidation, productHandler.c
 productRouter.get('/', productHandler.getAllProducts);
 productRouter.put('/update/:id', accessMiddleware.adminValidation, productHandler.updateProduct);
 productRouter.delete('/delete/:id', accessMiddleware.adminValidation, productHandler.deleteProduct);
-
+productRouter.get('/:id', productHandler.getProductById);
 export default productRouter;

@@ -1,9 +1,10 @@
-import { DataType,Table, Column, Model, CreatedAt, UpdatedAt, DeletedAt } from 'sequelize-typescript';
+import { Table,HasMany, Column, Model, CreatedAt, UpdatedAt, DeletedAt } from 'sequelize-typescript';
+import { ProductDetail } from './ProductDetail';
 
 
 @Table({ paranoid: true })
 export class Product extends Model {
-    @Column({primaryKey: true})
+    @Column({ primaryKey: true })
     id!: number;
     @Column
     price!: string;
@@ -11,20 +12,17 @@ export class Product extends Model {
     name!: string;
     @Column
     description!: string;
-    @Column(DataType.ARRAY(DataType.STRING))
-    photo!: string[];
-    @Column(DataType.JSON)
-    stock!: {
-        [color: string]: number;
-    };
     @Column
     active!: Boolean;
     @Column
-    type!: string;
+    category!: string;
     @CreatedAt
     createdAt!: Date;
     @UpdatedAt
     updatedAt!: Date;
     @DeletedAt
     deletedAt!: Date;
+
+    @HasMany(() => ProductDetail)
+    details!: ProductDetail[];
 }
