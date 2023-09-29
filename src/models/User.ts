@@ -1,4 +1,5 @@
-import { Table, Column, Model, CreatedAt, UpdatedAt, DeletedAt } from 'sequelize-typescript';
+import { Table, HasMany, Column, Model, CreatedAt, UpdatedAt, DeletedAt } from 'sequelize-typescript';
+import { Booking } from './Booking';
 
 
 @Table({paranoid:true})
@@ -23,5 +24,8 @@ export class User extends Model {
   updatedAt!: Date;
   @DeletedAt
   deletedAt!: Date;
+
+  @HasMany(() => Booking)
+  Bookings!: Booking[];
 
 }

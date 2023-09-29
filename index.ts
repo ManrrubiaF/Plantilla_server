@@ -10,7 +10,7 @@ server.get('/', (req: Request, res: Response) => {
   res.send('¡Bienvenido al servidor estándar!');
 });
 
-sequelize.sync({force:false}).then(() => {
+sequelize.sync({force:true}).then(() => {
   //firstload();
   server.listen(PORT, () => {
   console.log(`Server listening on port ${PORT}`);

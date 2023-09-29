@@ -1,24 +1,19 @@
-import { Booking, User, Product } from "../db";
+import { Booking, User, Product, ProductDetail } from "../db";
 import { Request, Response } from "express";
 import nodemailer from 'nodemailer';
 import config from "../lib/config";
 
 const companyEmail: string = config.COMPANY_EMAIL || '';
 const companyPass: string = config.COMPANY_PASS || '';
-const back_url: string = config.BACK_URL || '';
-const frontUrl: string = config.FRONT_URL || '';
 const host_email: string = config.HOST_MAIL || '';
 
 interface dataProduct {
     id: number;
-    userId: number;
-    products: Array<{
+    details: Array<{
         productId: number;
-        stock: {
-            [color: string]: number;
-        };
+        stock:number,
+        color:string,
     }>;
-
 }
 
 const transporter = nodemailer.createTransport({
@@ -31,31 +26,73 @@ const transporter = nodemailer.createTransport({
     },
 })
 
+const discountStock =async (dataProducts: dataProduct) => {
+    try {
+        for(const details of dataProducts.details){
+            const product: ProductDetail | null = await ProductDetail.findOne({
+                where:{
+                    productId: details.productId,
+                    color: details.color
+                }
+            })
+            if(product){
+                product.stock -= details.stock;
+                await product.save();
+            }
+            
+        }
+        return ('updated');
+    } catch (error) {
+        return error;        
+    }    
+}
+
+const increaseProduct =async (dataProducts: dataProduct) => {
+    try {
+        for(const details of dataProducts.details){
+            const product: ProductDetail | null = await ProductDetail.findOne({
+                where:{
+                    productId: details.productId,
+                    color: details.color
+                }
+            })
+            if(product){
+                product.stock += details.stock;
+                await product.save();
+            }
+            
+        }
+        return ('updated');        
+    } catch (error) {
+        
+    }    
+}
+
 const createBooking = async (req: Request, res: Response) => {
     const dataProducts: dataProduct = req.body
     const { id } = res.locals.userData;
 
     try {
         let enoughStock = true;
-        for(const product of dataProducts.products){
-            const productExist = await Product.findByPk(product.productId);
-            const colorStock = Object.keys(product.stock) as string[];
-            
+        const details = dataProducts.details
+        for(const product of details){
+            const productExist: Product | null = await Product.findOne({
+                where:{
+                    id: product.productId
+                },
+                include:ProductDetail
+            });
+            const colorStock = Object.keys(product.color) as string[];
             let index = 0
-            if(productExist){
-                while(enoughStock && index <= colorStock.length){
-                    const color = colorStock[index];
-                    if(!productExist.stock.hasOwnProperty(color)){
-                        enoughStock = false;
-                        const message = `Lo siento, se ha agotado el producto ${productExist.name} en color ${color}`;
-                        res.status(400).send(message);
-                    }
-                    index ++;
-                }  
-            }
+            while (enoughStock && index <= colorStock.length) {
+                if(product.color === productExist?.details[index].color && productExist.details[index].stock < product.stock){
+                    enoughStock = false;
+                }
+                index ++;
+            }            
         }
         if(enoughStock){
-            await Product.create({dataProducts})
+            await Booking.create({dataProducts})
             const user = await User.findByPk(id);
             await transporter.sendMail({
                 from: `${companyEmail}`,
@@ -63,6 +100,7 @@ const createBooking = async (req: Request, res: Response) => {
                 subject: 'Confirmaciòn de reserva',
                 html: 'Gracias por comprar en esta empresa, su reserva ha sido guardada.'
             })
+            await discountStock(dataProducts);
             res.status(201).send('Reserva/Compra creada')
         }
     } catch (error) {
@@ -82,23 +120,11 @@ const deleteBooking = async (req: Request, res: Response) => {
         });
         if (!bookingExist) {
             res.status(404).send('Reserva/Compra no encontrada')
+        }else{
+            await increaseProduct(dataProduct)
+            await bookingExist?.destroy({ force: true })
+            res.status(200).send('Su reserva/compra ha sido cancelada')
         }
-        const products = dataProduct.products;
-        for (const oneProduct of products) {
-            let updateProduct = await Product.findByPk(oneProduct.productId);
-
-            if (updateProduct) {
-                for (const oneColor of Object.keys(oneProduct.stock) as string[]) {
-                  const currentStock = updateProduct.stock[oneColor] || 0;
-                  const addStock = oneProduct.stock[oneColor] || 0;
-                  updateProduct.stock[oneColor] = addStock + currentStock;
-                }
-              
-                await updateProduct.save();
-              }
-        }
-        await bookingExist?.destroy({ force: true })
-        res.status(200).send('Su reserva/compra ha sido cancelada')
     } catch (error) {
         res.status(500).send('Server error')
     }
