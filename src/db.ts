@@ -12,32 +12,14 @@ const sequelize = new Sequelize({
   database:config.DB_NAME,
   password:config.DB_PASSWORD,
   username: config.DB_USER,
-  storage:':memory:',
+  host: config.DB_HOST,
+  port: config.DB_PORT,
   models:[__dirname + '/models'],
   logging: false,
+  dialectOptions: {
+    ssl: false,
+  },
 });
-
-
-/*const basename = path.basename(__filename);
-
-const modelDefiners: ((sequelize: typeof Sequelize) => void)[] = [];
-
-fs.readdirSync(path.join(__dirname, '/models'))
-  .filter((file) => (file.indexOf('.') !== 0) && (file !== basename) && (file.slice(-3) === '.ts'))
-  .forEach((file) => {
-    const modelDefiner = require(path.join(__dirname, '/models', file));
-    if (typeof modelDefiner === 'function') {
-      modelDefiners.push(modelDefiner);
-    }
-  });
-
-let entries = Object.entries(sequelize.models);
-let capsEntries = entries.map((entry) => [entry[0][0].toUpperCase() + entry[0].slice(1), entry[1]]);
-sequelize.afterInit = Object.fromEntries(capsEntries);*/
-
-Booking.belongsTo(User, { foreignKey: 'userId' })
-Booking.belongsTo(Product, { foreignKey: 'productId' })
-User.hasMany(Booking, { foreignKey: 'userId' });
 
 
 

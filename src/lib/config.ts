@@ -13,6 +13,7 @@ const config = {
     COMPANY_PASS: process.env.COMPANY_PASS || '',
     BACK_URL: process.env.BACK_URL||'',
     FRONT_URL: process.env.FRONT_URL || '',
+    DB_PORT: parseInt(process.env.DB_PORT || '0', 10),
 };
 
 export default config;
