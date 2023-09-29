@@ -21,8 +21,6 @@ const sequelize = new Sequelize({
   },
 });
 
-
-
 export {
   sequelize,
   User,
