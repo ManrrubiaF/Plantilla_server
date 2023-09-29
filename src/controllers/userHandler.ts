@@ -28,11 +28,11 @@ const createUser = async (req: Request, res: Response): Promise<void> => {
     const { email, pass, name, lastName, phone, access } = req.body;
 
     try {
-        const exist = await User.findOne({
+        const exist: User | null = await User.findOne({
             where: {
                 email: email,
-                raw: true
-            }
+            },
+            raw:true
         })
         if (exist) {
             res.status(400).send('Usuario existente')
@@ -63,7 +63,7 @@ const createUser = async (req: Request, res: Response): Promise<void> => {
         })
         res.send('Bienvenid@')
     } catch (error) {
-        res.status(400).json({ error: 'Error de servidor' });
+        res.status(500).json({ error: 'Error de servidor' });
     }
 
 }

@@ -1,12 +1,13 @@
-const express = require("express");
-import routerr from './routes'
-const morgan = require("morgan");
-const cors = require("cors");
+import express from "express";
+import morgan from "morgan";
+import cors from "cors";
+import routerr from "./routes";
 
-const server = express()
+const server = express();
 
 server.use(morgan("dev"));
 server.use(express.json());
+server.use(express.urlencoded({ extended: true }));
 server.use(cors());
 server.use(routerr);
 

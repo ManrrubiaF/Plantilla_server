@@ -47,9 +47,9 @@ const discountStock =async (dataProducts: dataProduct) => {
     }    
 }
 
-const increaseProduct =async (dataProducts: dataProduct) => {
+const increaseProduct =async (bookingExist: dataProduct) => {
     try {
-        for(const details of dataProducts.details){
+        for(const details of bookingExist.details){
             const product: ProductDetail | null = await ProductDetail.findOne({
                 where:{
                     productId: details.productId,
@@ -72,6 +72,7 @@ const createBooking = async (req: Request, res: Response) => {
     const dataProducts: dataProduct = req.body
     const { id } = res.locals.userData;
 
+
     try {
         let enoughStock = true;
         const details = dataProducts.details
@@ -82,17 +83,22 @@ const createBooking = async (req: Request, res: Response) => {
                 },
                 include:ProductDetail
             });
-            const colorStock = Object.keys(product.color) as string[];
+            const detailsProduct = productExist?.details;
             let index = 0
-            while (enoughStock && index <= colorStock.length) {
-                if(product.color === productExist?.details[index].color && productExist.details[index].stock < product.stock){
-                    enoughStock = false;
-                }
-                index ++;
-            }            
+            if(detailsProduct){
+                while (enoughStock && index < detailsProduct.length) {
+                    if(product.color === detailsProduct[index].color && detailsProduct[index].stock < product.stock){
+                        enoughStock = false;
+                    }
+                    index ++;
+                }    
+            }
         }
         if(enoughStock){
-            await Booking.create({dataProducts})
+            await Booking.create({
+                userId: id,
+                details: details,
+            })
             const user = await User.findByPk(id);
             await transporter.sendMail({
                 from: `${companyEmail}`,
@@ -102,6 +108,8 @@ const createBooking = async (req: Request, res: Response) => {
             })
             await discountStock(dataProducts);
             res.status(201).send('Reserva/Compra creada')
+        }else{
+            res.status(400).send('Lo sentimos,no hay suficiente stock')
         }
     } catch (error) {
         res.status(500).json(error)
@@ -121,7 +129,7 @@ const deleteBooking = async (req: Request, res: Response) => {
         if (!bookingExist) {
             res.status(404).send('Reserva/Compra no encontrada')
         }else{
-            await increaseProduct(dataProduct)
+            await increaseProduct(bookingExist)
             await bookingExist?.destroy({ force: true })
             res.status(200).send('Su reserva/compra ha sido cancelada')
         }

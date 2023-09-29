@@ -2,7 +2,7 @@ import { DataType, Table, Column, Model } from 'sequelize-typescript';
 
 @Table
 export class Data extends Model {
-    @Column({primaryKey: true})
+    @Column({ primaryKey: true, autoIncrement: true })
     id!: number;
     @Column
     aboutText!:string;

@@ -3,8 +3,8 @@ import { Response, Request } from "express";
 
 
 const createProduct = async (req: Request, res: Response) => {
-    const oneProduct = req.body
-
+    const oneProduct = req.body;
+    
     try {
         const productExist = await Product.findOne({
             where: {
@@ -19,7 +19,7 @@ const createProduct = async (req: Request, res: Response) => {
                 active: oneProduct.active,
                 category: oneProduct.category,
             })
-            for (const oneColor of oneProduct.detail) {
+            for (const oneColor of oneProduct.details) {
                 await ProductDetail.create({
                     color: oneColor.color,
                     stock: oneColor.stock,
@@ -44,25 +44,31 @@ const updateProduct = async (req: Request, res: Response) => {
         const productExist: Product | null = await Product.findOne({
             where: {
                 id: id
-            }
+            },
+            include: ProductDetail
         })
 
         if (productExist) {
             const updateData: Record<string, any> = {}
-            const detailData: Record<string, any> = {}
-
             for (const key in data) {
-                if (key === 'detail') {
-                    const detail = data[key];
-                    for (const detailKey in detail) {
-                        detailData[detailKey] = detail[detailKey];
+                if (key === 'details' && Array.isArray(data[key])) {
+                    const details = data[key];
+                    for (const detail of details) {
                         const existingDetail = await ProductDetail.findOne({
                             where: {
                                 productId: productExist.id,
                                 color: detail.color
                             }
                         });
-                        await existingDetail?.update(detailData)
+
+                        if (existingDetail) {
+                            await existingDetail.update(detail);
+                        } else {
+                            await ProductDetail.create({
+                                ...detail,
+                                productId: productExist.id
+                            });
+                        }
                     }
                 } else {
                     updateData[key] = data[key];
@@ -107,6 +113,21 @@ const getAllProducts = async (req: Request, res: Response) => {
     }
 }
 
+const getActiveProducts =async (req:Request, res:Response) => {
+    try {
+        const activeProducts = await Product.findAll({
+            where:{
+                active: true
+            },
+            include: ProductDetail
+        })
+        res.status(200).json(activeProducts)
+    } catch (error) {
+        res.status(500).json(error)
+    }
+    
+}
+
 const getProductById =async (req:Request, res:Response) => {
     const { id } = req.params;
     try {
@@ -131,5 +152,6 @@ export default {
     deleteProduct,
     getAllProducts,
     getProductById,
+    getActiveProducts
 
 } 

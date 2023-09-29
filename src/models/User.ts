@@ -4,7 +4,7 @@ import { Booking } from './Booking';
 
 @Table({paranoid:true})
 export class User extends Model {
-  @Column({primaryKey: true})
+  @Column({ primaryKey: true, autoIncrement: true })
   id!: number;
   @Column
   email!: string;
@@ -15,8 +15,8 @@ export class User extends Model {
   @Column
   lastName!:string;
   @Column
-  phone!:number;
-  @Column
+  phone!:string;
+  @Column({defaultValue:'normal'})
   access!:string;
   @CreatedAt
   createdAt!: Date;

@@ -3,19 +3,19 @@ import { User } from './User';
 
 @Table({paranoid:true})
 export class Booking extends Model {
-    @Column({primaryKey: true})
+    @Column({ primaryKey: true, autoIncrement: true })
     id!: number;
     @ForeignKey(() => User)
     @Column
     userId!: Number;
     @BelongsTo(()=> User)
     user!: User;
-    @Column
-    productId!: Number;
-    @Column(DataType.JSON)
-    stock!: {
-        [color: string]: number;
-    };
+    @Column(DataType.ARRAY(DataType.JSONB))
+    details!: {
+        productId: number;
+        color:string;
+        stock:number
+    }[];
     @CreatedAt
     createdAt!: Date;
     @UpdatedAt

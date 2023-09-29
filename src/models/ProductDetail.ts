@@ -3,6 +3,8 @@ import { Product } from './Product';
 
 @Table
 export class ProductDetail extends Model {
+  @Column({ primaryKey: true, autoIncrement: true })
+  id!:number;
   @Column
   color!: string;
   @Column

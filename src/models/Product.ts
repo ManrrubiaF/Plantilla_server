@@ -4,15 +4,15 @@ import { ProductDetail } from './ProductDetail';
 
 @Table({ paranoid: true })
 export class Product extends Model {
-    @Column({ primaryKey: true })
+    @Column({ primaryKey: true, autoIncrement: true })
     id!: number;
-    @Column
+    @Column({defaultValue: 'Sin precio'})
     price!: string;
     @Column
     name!: string;
     @Column
     description!: string;
-    @Column
+    @Column({defaultValue: true})
     active!: Boolean;
     @Column
     category!: string;
@@ -23,6 +23,8 @@ export class Product extends Model {
     @DeletedAt
     deletedAt!: Date;
 
-    @HasMany(() => ProductDetail)
+    @HasMany(() => ProductDetail, {
+        onDelete: 'CASCADE',
+    })
     details!: ProductDetail[];
 }

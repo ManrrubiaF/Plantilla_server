@@ -1,8 +1,38 @@
 {
     "products":[
         {
-
-        }
+            "price": "Precio del producto 1",
+            "name": "Nombre del producto 1",
+            "description": "Descripción del producto 1",
+            "active": true,
+            "category": "Categoría del producto 1",
+            "details": [
+              {
+                "color": "Azul",
+                "stock": 10,
+                "image": ["imagen1.jpg", "imagen2.jpg"]
+              },
+              {
+                "color": "Rojo",
+                "stock": 5,
+                "image": ["imagen3.jpg", "imagen4.jpg"]
+              }
+            ]
+          },
+          {
+            "price": "Precio del producto 2",
+            "name": "Nombre del producto 2",
+            "description": "Descripción del producto 2",
+            "active": false,
+            "category": "Categoría del producto 2",
+            "details": [
+              {
+                "color": "Amarillo",
+                "stock": 8,
+                "image": ["imagen5.jpg", "imagen6.jpg"]
+              }
+            ]
+          }
 
     ]
 }

@@ -3,14 +3,14 @@ import { sequelize } from "./src/db";
 const PORT = 3001;
 import { Request,Response } from "express";
 import routes from "./src/routes";
-//const { firstload } = require('./src/utils/countries')
+//import firstload from "./src/utils/firstload";
 
 server.use('/', routes);
 server.get('/', (req: Request, res: Response) => {
   res.send('¡Bienvenido al servidor estándar!');
 });
 
-sequelize.sync({force:true}).then(() => {
+sequelize.sync({force:false}).then(() => {
   //firstload();
   server.listen(PORT, () => {
   console.log(`Server listening on port ${PORT}`);

@@ -7,7 +7,6 @@ const jwt_secret: string = config.JWT_SECRET || '';
 const accessValidation = async (req: Request, res: Response, next: NextFunction) => {
     const authorizationHeader = req.headers['authorization'];
     const authorization: string = authorizationHeader || '';
-
     try {
         const token = authorization.split(" ")[1].replace(/"/g, '');
         const decodedToken: any = jwt.verify(token, jwt_secret);
@@ -19,7 +18,7 @@ const accessValidation = async (req: Request, res: Response, next: NextFunction)
             res.status(401).send('Acceso restringido');
         }
     } catch (error) {
-        res.status(500).send('Server error')
+        res.status(500).send(error)
 
     }
 }
@@ -29,9 +28,9 @@ const adminValidation =async (req:Request, res: Response,next:NextFunction) => {
     const authorization: string = authorizationHeader || '';
     
     try {
-        const token = authorization.split('')[1].replace(/"/g,'');
+        const token = authorization.split(" ")[1].replace(/"/g, '');
         const decodedToken:any = jwt.verify(token,jwt_secret);
-        if(decodedToken && !isTokenExpired(decodedToken) && decodedToken.status === 'Admin'){
+        if(decodedToken && !isTokenExpired(decodedToken) && decodedToken.access === 'Admin'){
             const userData = decodedToken;
             res.locals.userData = userData;
             next()
