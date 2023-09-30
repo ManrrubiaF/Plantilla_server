@@ -6,11 +6,11 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "tsc",
-    "start": "ts-node index.ts",
+    "start": "concurrently \"npm run server\"",
     "start:dev": "nodemon --watch './' --exec npm run server",
     "server": "ts-node index.ts",
     "api": "echo 'Local API listening on PORT 5000' & json-server --watch api/db.json -p 5000 -q",
-    "start:full": "concurrently \"npm run server\" \"npm run api\""
+    "start:full": "concurrently \"npm run server\""
   },
   "author": "Favio Manrrubia",
   "license": "ISC",
