@@ -1,12 +1,12 @@
 {
   "name": "server",
   "version": "1.0.0",
-  "description": "Server of CYM_IMPRESIONES",
+  "description": "Server_template",
   "main": "index.ts",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "tsc",
-    "start": "concurrently \"npm run server\"",
+    "start": "node dist/index.js",
     "start:dev": "nodemon --watch './' --exec npm run server",
     "server": "ts-node index.ts",
     "api": "echo 'Local API listening on PORT 5000' & json-server --watch api/db.json -p 5000 -q",
