@@ -23,7 +23,6 @@
     "jsonwebtoken": "^9.0.2",
     "nodemailer": "^6.9.5",
     "pg": "^8.11.3",
-    "reflect-metadata": "^0.1.13",
     "sequelize": "^6.33.0",
     "sequelize-typescript": "^2.1.5"
   },
