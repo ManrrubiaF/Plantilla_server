@@ -1,4 +1,4 @@
-import { Table,HasMany, Column, Model, CreatedAt, UpdatedAt, DeletedAt } from 'sequelize-typescript';
+import { Table,HasMany, Column, Model, CreatedAt, UpdatedAt, DeletedAt, DataType } from 'sequelize-typescript';
 import { ProductDetail } from './ProductDetail';
 import 'reflect-metadata';
 

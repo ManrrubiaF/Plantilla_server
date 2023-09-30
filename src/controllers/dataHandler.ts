@@ -14,9 +14,10 @@ const createData =async (req:Request, res:Response) => {
 }
 
 const updateData = async (req:Request, res:Response) => {
-    const { id } = req.body;
+    const { id } = req.params;
     try {
         const dataExist = await Data.findOne({where:{id:id}})
+        console.log(dataExist)
         if(dataExist){
             await dataExist.update(req.body)
             res.status(200).send('Datos actualizados')

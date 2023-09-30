@@ -149,17 +149,20 @@ const changePass = async (req: Request, res: Response) => {
 
 const loginUser =async (req:Request, res:Response) => {
     const data = req.body;
+    console.log(data)
     try {
         const userExist: User | null = await User.findOne({
             where:{
                 email: data.email
             }
         })
-        const hashed = await bcrypt.hash(data.pass, 5)
+        let access;
+        if(userExist){
+            access = await bcrypt.compare(data.pass, userExist.pass)
+        }
         if(!userExist){
             res.status(404).send('Email no registrado');
-        }
-        if(userExist && userExist.pass !== hashed){
+        }else if(userExist && !access){
             res.status(400).send('Contraseña incorrecta')
         }else{
             const payload = {

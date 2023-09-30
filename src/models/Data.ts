@@ -12,9 +12,9 @@ export class Data extends Model {
     videos!:string[];
     @Column(DataType.ARRAY(DataType.STRING))
     photos!:string[];
-    @Column
+    @Column(DataType.BIGINT)
     phone!:number;
-    @Column
+    @Column(DataType.BIGINT)
     whatsapp!:number;
     @Column
     email!:string;

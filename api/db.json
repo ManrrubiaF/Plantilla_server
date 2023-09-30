@@ -34,5 +34,17 @@
             ]
           }
 
+    ],
+    "data":[
+      {
+        "aboutText": "Texto de About",
+        "videos": ["video1.mp4", "video2.mp4"],
+        "photos": ["photo1.jpg", "photo2.jpg"],
+        "phone": 123456789,
+        "whatsapp": 541132036570,
+        "email": "manrrubiaf@gmail.com",
+        "socialLinks": ["enlace1", "enlace2"]
+      }
+      
     ]
 }

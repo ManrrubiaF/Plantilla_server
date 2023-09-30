@@ -1,9 +1,11 @@
 import axios from "axios";
-import { Product, ProductDetail } from "../db";
+import { Product,Data, ProductDetail } from "../db";
 
 async function firstload() {
     const response = await axios.get('http://localhost:5000/products');
     const products = response.data;
+    const dataResponse = await axios.get('http://localhost:5000/data');
+    const data = dataResponse.data
 
     try {
         for (const product of products) {
@@ -31,7 +33,9 @@ async function firstload() {
                     productId: productCreated.id
                 })
             }
-
+        }
+        for(const oneData of data){
+            await Data.create(oneData)
         }
         console.log( "Data embedded successfully")
     } catch (error) {
