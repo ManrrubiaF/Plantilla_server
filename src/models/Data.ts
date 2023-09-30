@@ -1,4 +1,6 @@
 import { DataType, Table, Column, Model } from 'sequelize-typescript';
+import 'reflect-metadata';
+
 
 @Table
 export class Data extends Model {

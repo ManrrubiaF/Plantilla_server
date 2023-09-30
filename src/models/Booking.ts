@@ -1,5 +1,7 @@
 import { DataType, BelongsTo, ForeignKey, Table, Column, Model, CreatedAt, UpdatedAt, DeletedAt } from 'sequelize-typescript';
 import { User } from './User';
+import 'reflect-metadata';
+
 
 @Table({paranoid:true})
 export class Booking extends Model {

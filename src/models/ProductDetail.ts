@@ -1,5 +1,7 @@
 import { DataType, Table, Column, Model, ForeignKey, BelongsTo } from 'sequelize-typescript';
 import { Product } from './Product';
+import 'reflect-metadata';
+
 
 @Table
 export class ProductDetail extends Model {

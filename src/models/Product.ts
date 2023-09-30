@@ -1,5 +1,7 @@
 import { Table,HasMany, Column, Model, CreatedAt, UpdatedAt, DeletedAt } from 'sequelize-typescript';
 import { ProductDetail } from './ProductDetail';
+import 'reflect-metadata';
+
 
 
 @Table({ paranoid: true })
