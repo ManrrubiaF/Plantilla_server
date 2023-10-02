@@ -11,5 +11,5 @@ userRouter.post('/change', accessMiddleware.accessValidation, userHandlers.chang
 userRouter.delete('/delete', accessMiddleware.accessValidation, userHandlers.deleteUser);
 userRouter.post('/login', userHandlers.loginUser);
 userRouter.put('/update', accessMiddleware.accessValidation, userHandlers.updateUser);
-
+userRouter.post('/logout', userHandlers.logout);
 export default userRouter;

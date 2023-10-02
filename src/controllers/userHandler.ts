@@ -1,4 +1,4 @@
-import { User } from '../db';
+import { BlackListToken, User } from '../db';
 import bcrypt from 'bcrypt'
 import { Request, Response } from 'express';
 import * as jwt from 'jsonwebtoken';
@@ -149,7 +149,6 @@ const changePass = async (req: Request, res: Response) => {
 
 const loginUser =async (req:Request, res:Response) => {
     const data = req.body;
-    console.log(data)
     try {
         const userExist: User | null = await User.findOne({
             where:{
@@ -158,6 +157,7 @@ const loginUser =async (req:Request, res:Response) => {
         })
         let access;
         if(userExist){
+            await userExist.restore()
             access = await bcrypt.compare(data.pass, userExist.pass)
         }
         if(!userExist){
@@ -176,7 +176,7 @@ const loginUser =async (req:Request, res:Response) => {
             }
             const token = jwt.sign(payload,jwt_secret,{expiresIn: '24h'})
             res.cookie('token', token,{expires: expirationDate})
-            res.send('Bienvenid@')
+            res.json(payload);
         }
     } catch (error) {
         
@@ -211,10 +211,27 @@ const updateUser = async (req:Request,res:Response) => {
     try {
         const userData = await User.findByPk(id)
         await userData?.update(data);
-        res.status(200).send('Datos actualizados')
+        const newData = await User.findByPk(id)
+        res.status(200).json({
+            id:newData?.id,
+            name:newData?.name,
+            lastName: newData?.lastName,
+            email: newData?.email,
+            phone: newData?.phone
+        })
     } catch (error) {
         res.status(500).json(error)
     }
+}
+
+const logout =async (req:Request, res:Response) => {
+    const { token } = req.body
+    try {
+        await BlackListToken.create(token)
+        res.status(200).send('Good Bye')
+    } catch (error) {
+        res.status(500).json(error)
+    }    
 }
 
 export default {
@@ -225,4 +242,5 @@ export default {
     deleteUser,
     loginUser,
     updateUser,
+    logout
 }

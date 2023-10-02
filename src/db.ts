@@ -4,6 +4,7 @@ import { Product } from './models/Product';
 import { Booking } from './models/Booking';
 import { Data }from './models/Data';
 import { ProductDetail } from './models/ProductDetail';
+import { BlackListToken } from './models/BlackListToken';
 import config from './lib/config'
 
 
@@ -27,5 +28,6 @@ export {
   Product,
   Booking,
   Data,
-  ProductDetail
+  ProductDetail,
+  BlackListToken
 };
