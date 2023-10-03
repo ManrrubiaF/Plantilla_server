@@ -1,5 +1,6 @@
 import { Product, ProductDetail } from "../db";
 import { Response, Request } from "express";
+import { Op } from "sequelize";
 
 
 const createProduct = async (req: Request, res: Response) => {
@@ -136,7 +137,14 @@ const getProductById =async (req:Request, res:Response) => {
                 id: id,
 
             },
-            include:ProductDetail
+            include: {
+                model: ProductDetail,
+                where: {
+                    stock: {
+                        [Op.gt]: 0 
+                    }
+                }
+            }
         })
         if(product){
             res.status(200).json(product)
