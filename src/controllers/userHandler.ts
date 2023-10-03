@@ -61,7 +61,7 @@ const createUser = async (req: Request, res: Response): Promise<void> => {
         res.cookie("token", token, {
             expires: expirationDate
         })
-        res.send('Bienvenid@')
+        res.json(payload)
     } catch (error) {
         res.status(500).json({ error: 'Error de servidor' });
     }

@@ -16,7 +16,8 @@ export class Booking extends Model {
     details!: {
         productId: number;
         color:string;
-        stock:number
+        stock:number;
+        status:string;
     }[];
     @CreatedAt
     createdAt!: Date;

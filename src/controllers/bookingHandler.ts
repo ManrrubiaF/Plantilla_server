@@ -117,12 +117,12 @@ const createBooking = async (req: Request, res: Response) => {
 }
 
 const deleteBooking = async (req: Request, res: Response) => {
-    const dataProduct: dataProduct = req.body
+    const newData = req.params
     const { id } = res.locals.userData;
     try {
         const bookingExist = await Booking.findOne({
             where:{
-                id: dataProduct.id,
+                id: newData.id,
                 userId: id
             }
         });
@@ -130,7 +130,7 @@ const deleteBooking = async (req: Request, res: Response) => {
             res.status(404).send('Reserva/Compra no encontrada')
         }else{
             await increaseProduct(bookingExist)
-            await bookingExist?.destroy({ force: true })
+            await bookingExist?.destroy()
             res.status(200).send('Su reserva/compra ha sido cancelada')
         }
     } catch (error) {
@@ -171,9 +171,30 @@ const getAllBookig =async (req:Request,res:Response) => {
     }    
 }
 
+const updateStatus =async (req:Request, res:Response) => {
+    const { id, status } = req.body
+    
+    try {
+        const bookingExist = await Booking.findOne({
+            where:{
+                id: id
+            }
+        })
+        if(bookingExist){
+            await bookingExist.update(status);
+            res.status(200).send('Booking Cancel')
+        }else{
+            res.status(404).send("Booking doesn't exist")
+        }
+    } catch (error) {
+        res.status(500).json(error)
+    }
+}
+
 export default {
     createBooking,
     deleteBooking,
     getByUser,
     getAllBookig,
+    updateStatus
 }
