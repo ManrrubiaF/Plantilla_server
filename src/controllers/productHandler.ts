@@ -120,7 +120,14 @@ const getActiveProducts =async (req:Request, res:Response) => {
             where:{
                 active: true
             },
-            include: ProductDetail
+            include: {
+                model: ProductDetail,
+                where: {
+                    stock: {
+                        [Op.gt]: 0 
+                    }
+                }
+            }
         })
         res.status(200).json(activeProducts)
     } catch (error) {
