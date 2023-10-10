@@ -32,10 +32,11 @@ const createUser = async (req: Request, res: Response): Promise<void> => {
             where: {
                 email: email,
             },
-            raw:true
+            raw: true
         })
         if (exist) {
-            res.status(400).send('Usuario existente')
+            res.status(400).send('Email already registered')
+            return;
         }
         const hashed = await bcrypt.hash(pass, 5)
         const newUser = await User.create({
@@ -58,12 +59,13 @@ const createUser = async (req: Request, res: Response): Promise<void> => {
         const token = jwt.sign(payload, jwt_secret, { expiresIn: "24h" })
 
 
-        res.cookie("token", token, {
-            expires: expirationDate
-        })
-        res.json(payload)
+        res.status(200).json({payload, token})
+
+        return;
+        
     } catch (error) {
-        res.status(500).json({ error: 'Error de servidor' });
+        res.status(500).json({ error: 'Server Error' });  
+        return;      
     }
 
 }
@@ -77,7 +79,7 @@ const recoverypass = async (req: Request, res: Response) => {
             }
         })
         if (userExist) {
-            const token = jwt.sign({id: userExist.id, email: userExist.email }, jwt_secret, { expiresIn: '1h' })
+            const token = jwt.sign({ id: userExist.id, email: userExist.email }, jwt_secret, { expiresIn: '1h' })
             const recoveryUrl = `${back_url}/user/${token}`
 
             await transporter.sendMail({
@@ -87,12 +89,13 @@ const recoverypass = async (req: Request, res: Response) => {
                 html: `Siga el siguiente link para restablecer su contraseña  ${recoveryUrl}`
             })
 
-            res.status(200).send('Link de recuperación enviado, revisa tu casilla de correo')
+            return res.status(200).send('Link de recuperación enviado, revisa tu casilla de correo')
+            
         } else {
-            res.status(400).send('No hay usuarios con ese email')
+            return res.status(400).send('No hay usuarios con ese email')
         }
     } catch (error) {
-        res.status(400).send('server error')
+        return res.status(400).send('server error')
 
     }
 }
@@ -110,7 +113,7 @@ const mailValidation = async (req: Request, res: Response) => {
             })
         }
         if (user) {
-            const newToken = jwt.sign({ id: user.id ,email: user.email }, jwt_secret, { expiresIn: '24h' })
+            const newToken = jwt.sign({ id: user.id, email: user.email }, jwt_secret, { expiresIn: '24h' })
             const recoveryPage = `${frontUrl}/recovery`
             res.cookie('token', newToken, {
                 expires: expirationDate
@@ -147,24 +150,23 @@ const changePass = async (req: Request, res: Response) => {
 
 }
 
-const loginUser =async (req:Request, res:Response) => {
-    const data = req.body;
+const loginUser = async (req: Request, res: Response) => {
+    const userData = req.body;    
     try {
         const userExist: User | null = await User.findOne({
-            where:{
-                email: data.email
+            where: {
+                email: userData.email
             }
-        })
+        })        
         let access;
-        if(userExist){
-            await userExist.restore()
-            access = await bcrypt.compare(data.pass, userExist.pass)
+        if (userExist) {
+            access = await bcrypt.compare(userData.pass, userExist.pass)
         }
-        if(!userExist){
-            res.status(404).send('Email no registrado');
-        }else if(userExist && !access){
-            res.status(400).send('Contraseña incorrecta')
-        }else{
+        if (!userExist) {
+            return res.status(404).send('Email no registrado');            
+        } else if (userExist && !access) {
+            return res.status(400).send('Contraseña incorrecta');
+        } else {
             const payload = {
                 id: userExist?.id,
                 email: userExist?.email,
@@ -174,13 +176,13 @@ const loginUser =async (req:Request, res:Response) => {
                 access: userExist?.access
 
             }
-            const token = jwt.sign(payload,jwt_secret,{expiresIn: '24h'})
-            res.cookie('token', token,{expires: expirationDate})
-            res.json(payload);
+            const token = jwt.sign(payload, jwt_secret, { expiresIn: '24h' })
+            return res.status(200).json({payload, token})
+          
         }
     } catch (error) {
-        
-    }        
+        return res.status(500).json(error)
+    }
 }
 
 
@@ -205,7 +207,7 @@ const deleteUser = async (req: Request, res: Response) => {
 
 }
 
-const updateUser = async (req:Request,res:Response) => {
+const updateUser = async (req: Request, res: Response) => {
     const { id } = res.locals.userData;
     const data = req.body
     try {
@@ -213,8 +215,8 @@ const updateUser = async (req:Request,res:Response) => {
         await userData?.update(data);
         const newData = await User.findByPk(id)
         res.status(200).json({
-            id:newData?.id,
-            name:newData?.name,
+            id: newData?.id,
+            name: newData?.name,
             lastName: newData?.lastName,
             email: newData?.email,
             phone: newData?.phone
@@ -224,14 +226,14 @@ const updateUser = async (req:Request,res:Response) => {
     }
 }
 
-const logout =async (req:Request, res:Response) => {
+const logout = async (req: Request, res: Response) => {
     const { token } = req.body
     try {
         await BlackListToken.create(token)
         res.status(200).send('Good Bye')
     } catch (error) {
         res.status(500).json(error)
-    }    
+    }
 }
 
 export default {

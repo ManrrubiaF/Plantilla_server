@@ -142,7 +142,6 @@ const getProductById =async (req:Request, res:Response) => {
         const product = await Product.findOne({
             where:{
                 id: id,
-
             },
             include: {
                 model: ProductDetail,

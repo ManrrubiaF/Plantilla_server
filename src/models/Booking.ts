@@ -9,7 +9,7 @@ export class Booking extends Model {
     id!: number;
     @ForeignKey(() => User)
     @Column
-    userId!: Number;
+    userId!: number;
     @BelongsTo(()=> User)
     user!: User;
     @Column(DataType.ARRAY(DataType.JSONB))

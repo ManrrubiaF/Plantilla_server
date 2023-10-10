@@ -1,5 +1,6 @@
 import { Booking, User, Product, ProductDetail } from "../db";
 import { Request, Response } from "express";
+import { Op } from "sequelize";
 import nodemailer from 'nodemailer';
 import config from "../lib/config";
 
@@ -144,7 +145,10 @@ const getByUser =async (req:Request, res:Response) => {
     try {
         const bookingByUser = await Booking.findAll({
             where:{
-                userId: id
+                userId: id,
+                status: {
+                    [Op.ne]: 'deleted'
+                }
             }
         })
         if(bookingByUser){
@@ -182,7 +186,7 @@ const updateStatus =async (req:Request, res:Response) => {
         })
         if(bookingExist){
             await bookingExist.update(status);
-            res.status(200).send('Booking Cancel')
+            res.status(200).send('Booking updated')
         }else{
             res.status(404).send("Booking doesn't exist")
         }

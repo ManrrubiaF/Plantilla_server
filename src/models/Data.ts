@@ -6,7 +6,7 @@ import 'reflect-metadata';
 export class Data extends Model {
     @Column({ primaryKey: true, autoIncrement: true })
     id!: number;
-    @Column
+    @Column({ type: 'text' })
     aboutText!:string;
     @Column(DataType.ARRAY(DataType.STRING))
     videos!:string[];
