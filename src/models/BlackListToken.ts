@@ -5,6 +5,6 @@ import 'reflect-metadata';
 export class BlackListToken extends Model {
     @Column({ primaryKey:true, autoIncrement: true})
     id!: number;
-    @Column
+    @Column({ type: 'text' })
     token!:string;
 }

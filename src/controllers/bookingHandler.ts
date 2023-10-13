@@ -8,13 +8,20 @@ const companyEmail: string = config.COMPANY_EMAIL || '';
 const companyPass: string = config.COMPANY_PASS || '';
 const host_email: string = config.HOST_MAIL || '';
 
-interface dataProduct {
+interface oneBooking {
     id: number;
     details: Array<{
         productId: number;
-        stock:number,
-        color:string,
+        stock: number,
+        color: string,
     }>;
+}
+interface dataProduct {
+
+    productId: number;
+    stock: number,
+    color: string,
+
 }
 
 const transporter = nodemailer.createTransport({
@@ -27,78 +34,77 @@ const transporter = nodemailer.createTransport({
     },
 })
 
-const discountStock =async (dataProducts: dataProduct) => {
+const discountStock = async (dataProducts: dataProduct[]) => {
     try {
-        for(const details of dataProducts.details){
+        for (const details of dataProducts) {
             const product: ProductDetail | null = await ProductDetail.findOne({
-                where:{
+                where: {
                     productId: details.productId,
                     color: details.color
                 }
             })
-            if(product){
+            if (product) {
                 product.stock -= details.stock;
                 await product.save();
             }
-            
+
         }
         return ('updated');
     } catch (error) {
-        return error;        
-    }    
+        return error;
+    }
 }
 
-const increaseProduct =async (bookingExist: dataProduct) => {
+const increaseProduct = async (bookingExist: oneBooking) => {
     try {
-        for(const details of bookingExist.details){
+        for (const details of bookingExist.details) {
             const product: ProductDetail | null = await ProductDetail.findOne({
-                where:{
+                where: {
                     productId: details.productId,
                     color: details.color
                 }
             })
-            if(product){
+            if (product) {
                 product.stock += details.stock;
                 await product.save();
             }
-            
+
         }
-        return ('updated');        
+        return ('updated');
     } catch (error) {
-        
-    }    
+
+    }
 }
 
 const createBooking = async (req: Request, res: Response) => {
-    const dataProducts: dataProduct = req.body
+    const dataProducts: dataProduct[] = req.body
     const { id } = res.locals.userData;
 
 
     try {
         let enoughStock = true;
-        const details = dataProducts.details
-        for(const product of details){
+        for (const product of dataProducts) {
             const productExist: Product | null = await Product.findOne({
-                where:{
+                where: {
                     id: product.productId
                 },
-                include:ProductDetail
+                include: ProductDetail
             });
             const detailsProduct = productExist?.details;
             let index = 0
-            if(detailsProduct){
+            if (detailsProduct) {
                 while (enoughStock && index < detailsProduct.length) {
-                    if(product.color === detailsProduct[index].color && detailsProduct[index].stock < product.stock){
+                    if (product.color === detailsProduct[index].color && detailsProduct[index].stock < product.stock) {
                         enoughStock = false;
                     }
-                    index ++;
-                }    
+                    index++;
+                }
             }
         }
-        if(enoughStock){
+        if (enoughStock) {
             await Booking.create({
                 userId: id,
-                details: details,
+                details: dataProducts,
             })
             const user = await User.findByPk(id);
             await transporter.sendMail({
@@ -109,7 +115,7 @@ const createBooking = async (req: Request, res: Response) => {
             })
             await discountStock(dataProducts);
             res.status(201).send('Reserva/Compra creada')
-        }else{
+        } else {
             res.status(400).send('Lo sentimos,no hay suficiente stock')
         }
     } catch (error) {
@@ -122,14 +128,14 @@ const deleteBooking = async (req: Request, res: Response) => {
     const { id } = res.locals.userData;
     try {
         const bookingExist = await Booking.findOne({
-            where:{
+            where: {
                 id: newData.id,
                 userId: id
             }
         });
         if (!bookingExist) {
             res.status(404).send('Reserva/Compra no encontrada')
-        }else{
+        } else {
             await increaseProduct(bookingExist)
             await bookingExist?.destroy()
             res.status(200).send('Su reserva/compra ha sido cancelada')
@@ -139,59 +145,61 @@ const deleteBooking = async (req: Request, res: Response) => {
     }
 }
 
-const getByUser =async (req:Request, res:Response) => {
+const getByUser = async (req: Request, res: Response) => {
     const { id } = res.locals.userData;
+
 
     try {
         const bookingByUser = await Booking.findAll({
-            where:{
+            where: {
                 userId: id,
                 status: {
                     [Op.ne]: 'deleted'
                 }
             }
         })
-        if(bookingByUser){
-            res.status(200).json(bookingByUser);
-        }else{
-            res.status(400).send('No se hicieron reservas o compras aún')
+        if (bookingByUser.length > 0) {
+            return res.status(200).json(bookingByUser);
+        } else {
+            return res.status(400).send('No se hicieron reservas o compras aún')
         }
     } catch (error) {
-        res.status(500).json(error)
+        return res.status(500).json(error)
     }
-    
+
 }
 
-const getAllBookig =async (req:Request,res:Response) => {
+const getAllBookig = async (req: Request, res: Response) => {
     try {
         const allBooking = await Booking.findAll()
-        if(allBooking){
+        if (allBooking) {
             res.status(200).json(allBooking)
-        }else{
+        } else {
             res.status(404).send('No te han reservado/comprado aún')
         }
     } catch (error) {
         res.status(500).json(error)
-    }    
+    }
 }
 
-const updateStatus =async (req:Request, res:Response) => {
-    const { id, status } = req.body
+const updateStatus = async (req: Request, res: Response) => {
+    const newData = req.body
     
+
     try {
         const bookingExist = await Booking.findOne({
-            where:{
-                id: id
+            where: {
+                id: newData.id
             }
         })
-        if(bookingExist){
-            await bookingExist.update(status);
-            res.status(200).send('Booking updated')
-        }else{
-            res.status(404).send("Booking doesn't exist")
+        if (bookingExist) {
+            await bookingExist.update({status : newData.status});
+            return res.status(200).send('Booking updated')
+        } else {
+            return res.status(404).send("Booking doesn't exist")
         }
     } catch (error) {
-        res.status(500).json(error)
+        return res.status(500).json(error)
     }
 }
 

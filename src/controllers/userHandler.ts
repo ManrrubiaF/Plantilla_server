@@ -157,7 +157,8 @@ const loginUser = async (req: Request, res: Response) => {
             where: {
                 email: userData.email
             }
-        })        
+        })
+        
         let access;
         if (userExist) {
             access = await bcrypt.compare(userData.pass, userExist.pass)
@@ -214,22 +215,27 @@ const updateUser = async (req: Request, res: Response) => {
         const userData = await User.findByPk(id)
         await userData?.update(data);
         const newData = await User.findByPk(id)
-        res.status(200).json({
-            id: newData?.id,
-            name: newData?.name,
-            lastName: newData?.lastName,
-            email: newData?.email,
-            phone: newData?.phone
-        })
+        let updatedData;
+        if(newData){
+            updatedData = {
+                id: newData.id,
+                name: newData.name,
+                lastName: newData.lastName,
+                phone: newData.phone,
+                email: newData.email,
+                access: newData.access
+            }
+        }
+        res.status(200).json(updatedData)
     } catch (error) {
         res.status(500).json(error)
     }
 }
 
 const logout = async (req: Request, res: Response) => {
-    const { token } = req.body
+    const  { token }  = req.body
     try {
-        await BlackListToken.create(token)
+        await BlackListToken.create({token: token})
         res.status(200).send('Good Bye')
     } catch (error) {
         res.status(500).json(error)

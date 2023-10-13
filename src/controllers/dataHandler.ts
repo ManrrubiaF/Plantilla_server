@@ -1,5 +1,22 @@
 import { Data } from "../db";
 import { Response, Request } from "express";
+import nodemailer from 'nodemailer';
+import config from "../lib/config";
+
+const host_mail: string = config.HOST_MAIL || '';
+const companyEmail: string = config.COMPANY_EMAIL || '';
+const companyPass: string = config.COMPANY_PASS || '';
+
+
+const transporter = nodemailer.createTransport({
+    host: host_mail,
+    port: 465,
+    secure: true,
+    auth: {
+        user: companyEmail,
+        pass: companyPass,
+    },
+})
 
 const createData =async (req:Request, res:Response) => {
     const oneData = req.body
@@ -52,9 +69,29 @@ const getAllData =async (req:Request, res:Response) => {
     }    
 }
 
+const sendMail =async (req:Request, res:Response) => {
+    const data = req.body;
+    try {
+
+        await transporter.sendMail({
+            from: data.email,
+            to: companyEmail,
+            subject: `Contact from ${data.name}, ${data.email}`,
+            html: `${data.text}`
+        })
+
+        return res.status(200).send('Mail sent')
+
+    } catch (error) {
+        return res.status(500).json(error)
+        
+    }    
+}
+
 export default {
     getAllData,
     createData,
     updateData,
     deleteData,
+    sendMail
 }
