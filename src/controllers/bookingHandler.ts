@@ -76,6 +76,21 @@ const increaseProduct = async (bookingExist: oneBooking) => {
     }
 }
 
+const getProductNamesFromDatabase = async (productId: number) => {
+    try {
+        const product = await Product.findByPk(productId);
+        let productname;
+        if (product) {
+            productname = product.name;
+            return productname
+        }     
+        
+    } catch (error) {
+        return error
+
+    }
+}
+
 const createBooking = async (req: Request, res: Response) => {
     const dataProducts: dataProduct[] = req.body
     const { id } = res.locals.userData;
@@ -114,6 +129,33 @@ const createBooking = async (req: Request, res: Response) => {
                 html: 'Gracias por comprar en esta empresa, su reserva ha sido guardada.'
             })
             await discountStock(dataProducts);
+
+            const dataProductsWithNames = await Promise.all(dataProducts.map(async (product) => {
+                const name = await getProductNamesFromDatabase(product.productId);
+                return {
+                  name,
+                  stock: product.stock,
+                  color: product.color,
+                };
+              }))
+            const emailBody = `
+                <html>
+                <body>
+                    <p>El usuario ${user?.email}, ${user?.name}, ${user?.lastName} con teléfono ${user?.phone} ha realizado la siguiente reserva:</p>
+                    <ul>
+                        ${dataProductsWithNames.map((product) => `<li>${product.name} (Stock: ${product.stock}, Color: ${product.color})</li>`).join('')}
+                    </ul>
+                 </body>
+                </html>`;
+
+
+
+            await transporter.sendMail({
+                from: `${companyEmail}`,
+                to: `${companyEmail}`,
+                subject: 'Confirmaciòn de reserva',
+                html: emailBody
+            })
             res.status(201).send('Reserva/Compra creada')
         } else {
             res.status(400).send('Lo sentimos,no hay suficiente stock')
@@ -184,7 +226,7 @@ const getAllBookig = async (req: Request, res: Response) => {
 
 const updateStatus = async (req: Request, res: Response) => {
     const newData = req.body
-    
+
 
     try {
         const bookingExist = await Booking.findOne({
@@ -193,7 +235,7 @@ const updateStatus = async (req: Request, res: Response) => {
             }
         })
         if (bookingExist) {
-            await bookingExist.update({status : newData.status});
+            await bookingExist.update({ status: newData.status });
             return res.status(200).send('Booking updated')
         } else {
             return res.status(404).send("Booking doesn't exist")

@@ -78,7 +78,8 @@ const updateProduct = async (req: Request, res: Response) => {
             }
 
             await productExist.update(updateData)
-            res.status(200).send('Producto actualizado')
+            const updatedProduct = await Product.findByPk(id, {include: ProductDetail})
+            res.status(200).json(updatedProduct)
         } else {
             res.status(404).send('Hubo un error al encontrar el producto')
         }
