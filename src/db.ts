@@ -18,7 +18,8 @@ const sequelize = new Sequelize({
   models:[__dirname + '/models'],
   logging: false,
   dialectOptions: {
-    ssl: false,
+    ssl: true,
+    sslmode: 'require'
   },
 });
 
